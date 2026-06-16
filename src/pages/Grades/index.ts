@@ -1,0 +1,1 @@
+export { Grades as default } from './Grades';
