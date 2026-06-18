@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../../store';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, ClipboardCheck, CalendarDays, CalendarRange, BookOpen, Sun, Moon, LogOut, GraduationCap, Menu, X, FileText, Monitor } from 'lucide-react';
+import { useAppUpdate } from '../../hooks/useAppUpdate';
+import { AppUpdateDialog } from '../AppUpdateDialog';
 
 const navItems = [
   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', ariaLabel: 'Ir al Dashboard' },
@@ -15,11 +17,19 @@ const navItems = [
 ];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const { state, logout, toggleTheme } = useApp();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+   const { state, logout, toggleTheme } = useApp();
+   const location = useLocation();
+   const navigate = useNavigate();
+   const [sidebarOpen, setSidebarOpen] = useState(false);
+   const [isMobile, setIsMobile] = useState(false);
+   
+   const {
+    updateAvailable,
+    updateInfo,
+    downloadUpdate,
+    dismissUpdate,
+    isMandatoryBlocked,
+  } = useAppUpdate();
 
   const currentPage = location.pathname.slice(1) || 'dashboard';
 
@@ -168,6 +178,22 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       >
         {children}
       </main>
+
+      {updateInfo && (
+        <AppUpdateDialog
+          open={updateAvailable}
+          onOpenChange={dismissUpdate}
+          onDownload={downloadUpdate}
+          updateInfo={{
+            version: updateInfo.version,
+            build: updateInfo.build,
+            changelog: updateInfo.changelog,
+            mandatory: updateInfo.mandatory,
+          }}
+          isMandatoryBlocked={isMandatoryBlocked}
+          daysRemaining={3}
+        />
+      )}
     </div>
   );
 };

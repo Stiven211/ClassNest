@@ -242,3 +242,36 @@ create trigger trg_periods_no_overlap
   on periods
   for each row
   execute function public.check_period_overlap();
+
+-- Tabla app_updates para gestión de actualizaciones APK
+create table if not exists app_updates (
+  id uuid primary key default uuid_generate_v4(),
+  version text not null,
+  build integer not null,
+  apk_url text not null,
+  changelog text,
+  mandatory boolean default false,
+  created_at timestamp default now()
+);
+
+create index if not exists idx_app_updates_version on app_updates(version desc);
+create index if not exists idx_app_updates_build on app_updates(build desc);
+create index if not exists idx_app_updates_created_at on app_updates(created_at desc);
+
+alter table app_updates enable row level security;
+
+create policy "Anyone can view app updates" on app_updates for select using (true);
+create policy "Admin can insert app updates" on app_updates for insert with check (auth.uid() = (select id from users where email like '%admin%' escape '$'));
+create policy "Admin can update app updates" on app_updates for update using (auth.uid() = (select id from users where email like '%admin%' escape '$'));
+create policy "Admin can delete app updates" on app_updates for delete using (auth.uid() = (select id from users where email like '%admin%' escape '$'));
+
+-- Insertar registro inicial para la versión 1.1.0 (build 2)
+-- Actualizar la URL de apk_url al hosting que uses (Supabase Storage, GitHub Releases, etc.)
+insert into app_updates (version, build, apk_url, changelog, mandatory)
+values (
+  '1.1.0',
+  2,
+  'https://rmecpcrfcpxkzbjrfjos.supabase.co/storage/v1/object/public/classnest-apks/ClassNest.apk',
+  'Nueva version con sistema de actualizaciones mejorado.',
+  false
+);
