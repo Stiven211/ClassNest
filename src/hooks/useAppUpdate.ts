@@ -47,6 +47,7 @@ export const useAppUpdate = () => {
   const [checking, setChecking] = useState(false);
   const [isNative, setIsNative] = useState(false);
   const [isMandatoryBlocked, setIsMandatoryBlocked] = useState(false);
+  const [daysRemaining, setDaysRemaining] = useState(0);
 
   const checkForUpdate = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -81,8 +82,12 @@ export const useAppUpdate = () => {
       const now = Date.now();
 
       if (latestBuild > installedBuild) {
-        const blocked = data.mandatory && dismissedUntil > now;
-        setIsMandatoryBlocked(blocked);
+        const hasGraceExpired = data.mandatory && dismissedUntil > 0 && dismissedUntil <= now;
+        const isGraceActive = data.mandatory && dismissedUntil > now;
+        const remaining = isGraceActive ? Math.ceil((dismissedUntil - now) / GRACE_MS) : 0;
+
+        setDaysRemaining(remaining);
+        setIsMandatoryBlocked(hasGraceExpired);
 
         setUpdateInfo({
           version: data.version,
@@ -122,6 +127,7 @@ export const useAppUpdate = () => {
     if (!updateInfo) return;
     if (updateInfo.mandatory) {
       setDismissedUntil(Date.now() + GRACE_MS);
+      setDaysRemaining(GRACE_DAYS);
     }
     setUpdateAvailable(false);
     setUpdateInfo(null);
@@ -134,6 +140,7 @@ export const useAppUpdate = () => {
     setUpdateAvailable(false);
     setUpdateInfo(null);
     setIsMandatoryBlocked(false);
+    setDaysRemaining(0);
     window.localStorage.removeItem(DISMISSED_UNTIL_KEY);
   }, [updateInfo]);
 
@@ -147,6 +154,7 @@ export const useAppUpdate = () => {
     checking,
     isNative,
     isMandatoryBlocked,
+    daysRemaining,
     checkForUpdate,
     downloadUpdate,
     dismissUpdate,
