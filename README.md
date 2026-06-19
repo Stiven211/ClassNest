@@ -61,25 +61,6 @@
 - Cuenta y proyecto en Supabase
 - Android Studio (opcional, para compilar APK)
 
-## Instalación
-
-```bash
-git clone https://github.com/Stiven211/ClassNest.git
-cd classnest
-npm install
-```
-
-## Variables de Entorno
-
-Crea un archivo `.env` en la raíz del proyecto:
-
-```env
-VITE_SUPABASE_URL=tu_proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu_anon_key
-```
-
-> Importante: No subas el archivo `.env` a control de versiones.
-
 ## Desarrollo
 
 ```bash
@@ -87,37 +68,6 @@ npm run dev
 ```
 
 La aplicación estará disponible en `http://localhost:5173`
-
-## Compilación Android
-
-```bash
-# Sincronizar con Capacitor
-npx cap sync android
-
-# Compilar APK debug
-cd android
-./gradlew assembleDebug
-```
-
-El APK se generará en `android/app/build/outputs/apk/debug/app-debug.apk`
-
-Para release:
-```bash
-./gradlew assembleRelease
-```
-
-## Despliegue en Vercel
-
-1. Conecta el repositorio en Vercel
-2. Configura las variables de entorno:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-3. Configuración de build:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-   - Install Command: `npm install`
-
-No olvides agregar el dominio de Vercel en **Supabase Authentication → URL Configuration**.
 
 ## Sistema de Actualizaciones
 
@@ -128,23 +78,6 @@ ClassNest incluye un sistema nativo de actualización de APK:
 - Periodo de gracia de 3 días para actualizaciones opcionales
 - Actualizaciones obligatorias bloquean la app hasta instalar
 - Descarga directa mediante Capacitor Browser
-
-### Configuración en Supabase
-
-Ejecuta el SQL de migración en `supabase/migrations.sql` para crear la tabla `app_updates`.
-
-### Registrar una nueva versión
-
-```sql
-INSERT INTO app_updates (version, build, apk_url, changelog, mandatory)
-VALUES (
-  '1.1.0',
-  2,
-  'https://tu-servidor.com/classnest.apk',
-  'Descripción de cambios',
-  false -- true para obligatoria
-);
-```
 
 ## Arquitectura
 
@@ -175,20 +108,6 @@ classnest/
 ├── supabase/             # Migraciones SQL
 └── public/               # Recursos estáticos
 ```
-
-### Flujo de datos
-
-1. **Supabase Auth** maneja autenticación y sesión
-2. **Zustand Store** centraliza el estado con mappers `snake_case` ↔ `camelCase`
-3. **React Router** define rutas protegidas por autenticación
-4. **Capacitor** envuelve la app para acceso a APIs nativas
-
-## Seguridad
-
-- Credenciales de Supabase mediante variables de entorno (`VITE_*`)
-- Row Level Security (RLS) habilitado en todas las tablas
-- Políticas restrictivas por `user_id` en Supabase
-- No se almacenan contraseñas en el cliente
 
 ## Scripts Disponibles
 
